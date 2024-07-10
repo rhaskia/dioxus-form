@@ -1,16 +1,11 @@
 use std::collections::HashMap;
-use std::fmt::Debug;
 use std::str::FromStr;
-
 use dioxus::html::FormValue;
-use serde::de::MapAccess;
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 use serde_json::{Map, Value};
-
 use crate::Error;
 
 pub fn to_value(mut values: HashMap<String, FormValue>) -> Value {
-    // let mut values = values.iter().map(|(key, value)| (key, FormInter::Value(value))).collect();
     let mut result = Value::Object(Map::new());
 
     for (key, value) in values {

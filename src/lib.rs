@@ -1,4 +1,4 @@
-#![feature(error_generic_member_access)]
+//#![feature(error_generic_member_access)]
 mod serializer;
 mod deserializer;
 use serde::{ser::Serialize, de::Deserialize};
@@ -12,7 +12,6 @@ pub fn Form<T: Serialize + 'static + PartialEq + for<'de> Deserialize<'de>>(valu
         form {
             oninput: move |i| {
                 let values = i.values();
-                //if !i.valid() { println!("INVALID RESPONSE {i:?}"); return; }
                 let result: Result<T, Error> = deserializer::from_values(values); 
                 match result {
                     Ok(v) => value.set(v),
@@ -26,7 +25,7 @@ pub fn Form<T: Serialize + 'static + PartialEq + for<'de> Deserialize<'de>>(valu
 
 #[derive(Debug)]
 pub struct Error {
-    message: String,
+    _message: String,
 }
 
 impl Display for Error {
@@ -39,7 +38,7 @@ impl serde::ser::Error for Error {
         T: Display,
     {
         Error {
-            message: msg.to_string(),
+            _message: msg.to_string(),
         }
     }
 }
@@ -50,7 +49,7 @@ impl serde::de::Error for Error {
         T: Display,
     {
         Error {
-            message: msg.to_string(),
+            _message: msg.to_string(),
         }
     }
 }
@@ -62,5 +61,5 @@ impl serde::ser::StdError for Error {
 
     fn cause(&self) -> Option<&dyn std::error::Error> { self.source() }
 
-    fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
+    //fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
 }

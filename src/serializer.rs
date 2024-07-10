@@ -7,8 +7,6 @@ use serde::ser::{
     SerializeTupleStruct, SerializeTupleVariant, Serializer,
 };
 
-
-
 pub fn create_form<T>(value: Signal<T>) -> Result<String, Error>
 where
     T: Serialize,
@@ -74,6 +72,7 @@ impl<'a> Serializer for &'a mut FormBuilder {
         Ok(())
     }
 
+    // TODO: limits for different types
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
         self.serialize_i64(i64::from(v))
     }
@@ -110,7 +109,7 @@ impl<'a> Serializer for &'a mut FormBuilder {
         self.output += "<input name=\"";
         self.output += &self.nesting.join(".");
         self.output += ".n";
-        self.output += &format!("\" value = {v} type=\"number\" /><br/>");
+        self.output += &format!("\" min=0 value = {v} type=\"number\" /><br/>");
         Ok(())
     }
 
@@ -205,8 +204,7 @@ impl<'a> Serializer for &'a mut FormBuilder {
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        self.output += "<div class = \"formtuple\">";
-        Ok(self)
+        self.serialize_seq(Some(len))
     }
 
     fn serialize_tuple_struct(
@@ -214,6 +212,7 @@ impl<'a> Serializer for &'a mut FormBuilder {
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
+        self.output += &format!("<fieldset name=\"{name}\" >");
         Ok(self)
     }
 
@@ -290,7 +289,7 @@ impl<'a> SerializeTupleStruct for &'a mut FormBuilder {
     where
         T: ?Sized + serde::Serialize,
     {
-        todo!()
+        value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> { todo!() }
