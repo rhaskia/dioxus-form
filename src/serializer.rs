@@ -1,6 +1,4 @@
-use std::fmt::Display;
 use crate::Error;
-
 use dioxus::prelude::*;
 use serde::ser::{
     Serialize, SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,
@@ -13,7 +11,6 @@ where
 {
     let mut serializer = FormBuilder {
         output: String::new(),
-        current_id: String::new(),
         nesting: vec![],
         list: vec![],
     };
@@ -42,7 +39,6 @@ fn readable(snake_case: &str) -> String {
 
 pub struct FormBuilder {
     output: String,
-    current_id: String,
     nesting: Vec<String>,
     list: Vec<(usize, usize)>,
 }
@@ -65,7 +61,7 @@ impl<'a> Serializer for &'a mut FormBuilder {
         self.output += &self.nesting.join(".");
         self.output += ".b\"";
         if v { self.output += " checked"; }
-        self.output += &format!(" type=\"checkbox\" onclick=\"this.value = this.checked ? \"on\" : \"off\"\" /><br/>");
+        self.output += &format!(" type=\"checkbox\"/><br/>");
         self.output += "<input type=hidden value=\"off\" name=\"";
         self.output += &self.nesting.join(".");
         self.output += ".b\"/>";
@@ -86,9 +82,11 @@ impl<'a> Serializer for &'a mut FormBuilder {
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
+        let name = format!("{}.n", &self.nesting.join("."));
         self.output += "<input name=\"";
-        self.output += &self.nesting.join(".");
-        self.output += ".n";
+        self.output += &name;
+        self.output += "\" id=\"";
+        self.output += &name;
         self.output += &format!("\" value = {v} type=\"number\" /><br/>");
         Ok(())
     }
@@ -106,9 +104,11 @@ impl<'a> Serializer for &'a mut FormBuilder {
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
+        let name = format!("{}.n", &self.nesting.join("."));
         self.output += "<input name=\"";
-        self.output += &self.nesting.join(".");
-        self.output += ".n";
+        self.output += &name;
+        self.output += "\" id=\"";
+        self.output += &name;
         self.output += &format!("\" min=0 value = {v} type=\"number\" /><br/>");
         Ok(())
     }
@@ -141,7 +141,13 @@ impl<'a> Serializer for &'a mut FormBuilder {
         Ok(())
     }
 
-    fn serialize_bytes(self, _: &[u8]) -> Result<Self::Ok, Self::Error> { todo!() }
+    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> { 
+        let mut seq = self.serialize_seq(Some(v.len()))?;
+        for byte in v {
+            SerializeSeq::serialize_element(&mut seq, byte)?;
+        }
+        SerializeSeq::end(self)
+    }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
         // TODO button that creates
@@ -152,18 +158,18 @@ impl<'a> Serializer for &'a mut FormBuilder {
     where
         T: ?Sized + serde::Serialize,
     {
-        // remove button
+        // TODO: remove button
         value.serialize(self)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> { Ok(()) }
 
-    fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> { Ok(()) }
+    fn serialize_unit_struct(self, _: &'static str) -> Result<Self::Ok, Self::Error> { Ok(()) }
 
     fn serialize_unit_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
         self.serialize_str(variant)
@@ -171,7 +177,7 @@ impl<'a> Serializer for &'a mut FormBuilder {
 
     fn serialize_newtype_struct<T>(
         self,
-        name: &'static str,
+        _name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
@@ -182,9 +188,9 @@ impl<'a> Serializer for &'a mut FormBuilder {
 
     fn serialize_newtype_variant<T>(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
@@ -213,20 +219,21 @@ impl<'a> Serializer for &'a mut FormBuilder {
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
         self.output += &format!("<fieldset name=\"{name}\" >");
-        Ok(self)
+        self.serialize_seq(Some(len))
     }
 
     fn serialize_tuple_variant(
         self,
         name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        len: usize,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
+        self.output += &format!("<fieldset name=\"{name}\" >");
         Ok(self) // should be fine?
     }
 
-    fn serialize_map(mut self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         self.output += "<fieldset name=\"map\" >";
         Ok(self)
     }
@@ -234,20 +241,18 @@ impl<'a> Serializer for &'a mut FormBuilder {
     fn serialize_struct(
         self,
         name: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        let field = self.nesting.last().map(|s| readable(s)).unwrap_or(String::new());
         self.output += &format!("<fieldset name={name:?} >");
-        //self.output += &format!("<legend> {field:?} </legend>");
         Ok(self)
     }
 
     fn serialize_struct_variant(
         self,
         name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        len: usize,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         self.output += &format!("<fieldset name={name:?} >");
         Ok(self)
@@ -304,10 +309,21 @@ impl<'a> SerializeStructVariant for &'a mut FormBuilder {
     where
         T: ?Sized + serde::Serialize,
     {
-        todo!()
+        self.output += &format!(
+            "<label class=\"inputname\" for={key:?}>{} </label>",
+            readable(key)
+        );
+        self.nesting.push(key.to_string());
+        value.serialize(&mut **self)?;
+        self.nesting.pop();
+        Ok(())
     }
 
-    fn end(self) -> Result<Self::Ok, Self::Error> { todo!() }
+    fn end(self) -> Result<Self::Ok, Self::Error> { 
+        self.output += "</fieldset>";
+        self.nesting.pop();
+        Ok(())
+    }
 }
 
 impl<'a> SerializeTupleVariant for &'a mut FormBuilder {
@@ -319,10 +335,18 @@ impl<'a> SerializeTupleVariant for &'a mut FormBuilder {
     where
         T: ?Sized + serde::Serialize,
     {
-        todo!()
+        self.list.last_mut().unwrap().0 -= 1;
+        let list_idx = self.list.last().unwrap().1 - self.list.last().unwrap().0; 
+        while self.nesting.last_mut().unwrap().pop() != Some('[') {}
+        self.nesting.last_mut().unwrap().push_str(&format!("[{}]", list_idx - 1));
+        value.serialize(&mut **self)?;
+        Ok(())
     }
 
-    fn end(self) -> Result<Self::Ok, Self::Error> { todo!() }
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        self.output += "</div>";
+        Ok(())
+    }
 }
 
 impl<'a> SerializeTuple for &'a mut FormBuilder {
@@ -334,7 +358,10 @@ impl<'a> SerializeTuple for &'a mut FormBuilder {
     where
         T: ?Sized + serde::Serialize,
     {
-        self.current_id = "item".to_string();
+        self.list.last_mut().unwrap().0 -= 1;
+        let list_idx = self.list.last().unwrap().1 - self.list.last().unwrap().0; 
+        while self.nesting.last_mut().unwrap().pop() != Some('[') {}
+        self.nesting.last_mut().unwrap().push_str(&format!("[{}]", list_idx - 1));
         value.serialize(&mut **self)?;
         Ok(())
     }
@@ -378,15 +405,24 @@ impl<'a> SerializeMap for &'a mut FormBuilder {
     where
         T: ?Sized + serde::Serialize,
     {
-        todo!()
+        self.nesting.push("key".to_string());
+        key.serialize(&mut **self)?;
+        Ok(())
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + serde::Serialize,
     {
-        todo!()
+        value.serialize(&mut **self)?;
+        self.nesting.push("value".to_string());
+        //self.nesting.pop();
+        Ok(())
     }
 
-    fn end(self) -> Result<Self::Ok, Self::Error> { todo!() }
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        self.output += "</fieldset>";
+        self.nesting.pop();
+        Ok(())
+    }
 }

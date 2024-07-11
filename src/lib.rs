@@ -15,7 +15,7 @@ pub fn Form<T: Serialize + 'static + PartialEq + for<'de> Deserialize<'de>>(valu
                 let result: Result<T, Error> = deserializer::from_values(values); 
                 match result {
                     Ok(v) => value.set(v),
-                    Err(e) => println!("{e:?}"),
+                    Err(e) => panic!("{e:?}"),
                 }
             },
             dangerous_inner_html: create_form(value).ok()?

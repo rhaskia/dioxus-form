@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde_json::{Map, Value};
 use crate::Error;
 
-pub fn to_value(mut values: HashMap<String, FormValue>) -> Value {
+pub fn to_value(values: HashMap<String, FormValue>) -> Value {
     let mut result = Value::Object(Map::new());
 
     for (key, value) in values {

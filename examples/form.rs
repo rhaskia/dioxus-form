@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_form::Form;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 struct Example {
     pub amount: u64,
     pub vector: Vec<u64>,
@@ -11,7 +11,7 @@ struct Example {
     pub nested: NestedExample,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 struct NestedExample {
     pub tuple: (u64, u64),
 }
@@ -28,6 +28,7 @@ pub fn App() -> Element {
 
     rsx! {
         Form { value: example }
+        "{example:?}"
     }
 }
 
