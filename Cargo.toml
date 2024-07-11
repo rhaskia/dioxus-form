@@ -6,6 +6,7 @@ authors = ["Rhaskia"]
 description = "Automatic form-serializer for dioxus"
 readme = "README.md"
 repository = "https://github.com/rhaskia/dioxus-form/"
+homepage = "https://github.com/rhaskia/dioxus-form/"
 keywords = ["dioxus", "forms", "gui", "ui", "input"]
 license = "MIT OR Apache-2.0"
 
