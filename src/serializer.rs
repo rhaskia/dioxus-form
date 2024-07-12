@@ -390,6 +390,11 @@ impl<'a> SerializeSeq for &'a mut FormBuilder {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
+        let list_idx = self.list.last().unwrap().1; 
+        while self.nesting.last_mut().unwrap().pop() != Some('[') {}
+        self.nesting.last_mut().unwrap().push_str(&format!("[{}]", list_idx - 1));
+
+        self.output += "<button class=\"addbutton\" onclick=\"\">Add</button>";
         self.output += "</div>";
         self.list.pop();
         Ok(())

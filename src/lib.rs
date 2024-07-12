@@ -1,4 +1,3 @@
-//#![feature(error_generic_member_access)]
 mod serializer;
 mod deserializer;
 use serde::{ser::Serialize, de::Deserialize};
