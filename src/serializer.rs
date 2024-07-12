@@ -159,7 +159,9 @@ impl<'a> Serializer for &'a mut FormBuilder {
         T: ?Sized + serde::Serialize,
     {
         // TODO: remove button
-        value.serialize(self)
+        value.serialize(&mut *self)?;
+        self.output += "<button onclick=\"this.parentNode.removeChild(this.previousElementSibling);\">Remove</button>";
+        Ok(())
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> { Ok(()) }
@@ -394,8 +396,8 @@ impl<'a> SerializeSeq for &'a mut FormBuilder {
         while self.nesting.last_mut().unwrap().pop() != Some('[') {}
         self.nesting.last_mut().unwrap().push_str(&format!("[{}]", list_idx - 1));
 
-        self.output += "<button class=\"addbutton\" onclick=\"\">Add</button>";
-        self.output += "</div>";
+        // self.output += "<button class=\"addbutton\" onclick=\"\">Add</button>";
+        // self.output += "</div>";
         self.list.pop();
         Ok(())
     }

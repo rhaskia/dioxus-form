@@ -5,8 +5,10 @@ use dioxus::prelude::*;
 use serializer::create_form;
 use std::fmt::{Display, Debug};
 
+use serde_json::Value;
+
 #[component]
-pub fn Form<T: Serialize + 'static + PartialEq + for<'de> Deserialize<'de>>(value: Signal<T>) -> Element {
+pub fn Form<T: Clone + Serialize + 'static + PartialEq + for<'de> Deserialize<'de>>(value: Signal<T>) -> Element {
     rsx! {
         form {
             oninput: move |i| {
