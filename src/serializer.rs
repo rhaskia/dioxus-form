@@ -137,6 +137,9 @@ impl<'a> Serializer for &'a mut FormBuilder {
         self.output += "<input name=\"";
         self.output += &self.nesting.join(".");
         self.output += ".s";
+        self.output += "\" id=\"";
+        self.output += &self.nesting.join(".");
+        self.output += ".s";
         self.output += &format!("\" value = {v:?}/><br/>");
         Ok(())
     }
