@@ -265,10 +265,9 @@ checksum = "2ea539174bb236e0e7dc9c12b19b88eae3cb574dedbd0252a2d43ea7e6de13e2"
 
 [[package]]
 name = "dioxus-form"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "dioxus",
- "proc-macro2",
  "serde",
  "serde_json",
 ]

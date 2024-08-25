@@ -1,6 +1,6 @@
 [package]
 name = "dioxus-form"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Rhaskia"]
 description = "Automatic form-serializer for dioxus"
@@ -14,4 +14,3 @@ license = "MIT OR Apache-2.0"
 serde = { version = "1.0", features = ["serde_derive"] }
 dioxus = "0.5"
 serde_json = "1.0"
-proc-macro2 = "=1.0.79"
