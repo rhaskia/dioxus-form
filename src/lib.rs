@@ -9,7 +9,7 @@ use serde_json::Value;
 
 #[component]
 pub fn Form<T: Clone + Serialize + 'static + PartialEq + for<'de> Deserialize<'de>>(value: Signal<T>) -> Element {
-    let html = use_signal(|| create_form(value).ok());
+    let html = use_signal(|| create_form(value));
 
     rsx! {
         form {
@@ -21,12 +21,12 @@ pub fn Form<T: Clone + Serialize + 'static + PartialEq + for<'de> Deserialize<'d
                     Err(e) => panic!("{e:?}"),
                 }
             },
-            dangerous_inner_html: html()?,
+            dangerous_inner_html: html.read().clone()?,
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Error {
     _message: String,
 }
