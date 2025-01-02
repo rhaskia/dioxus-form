@@ -5,8 +5,26 @@ use dioxus::prelude::*;
 use serializer::create_form;
 use std::fmt::{Display, Debug};
 
-use serde_json::Value;
-
+/// Dioxus Component for automatically creating a html form
+/// Simply pass a Signal into the Component and the Signal will be automatically updated as the
+/// form is updated.
+///
+/// ```rs 
+/// struct FormStruct {
+///     int: i32,
+///     string: String,
+///     b: bool,
+/// }
+///
+/// #[component]
+/// fn App() -> Element {
+///     let signal = use_signal(|| FormStruct { int: 2, string: String::new(), b: true });
+///
+///     rsx! {
+///         Form { value: signal }
+///     }
+/// }
+/// ```
 #[component]
 pub fn Form<T: Clone + Serialize + 'static + PartialEq + for<'de> Deserialize<'de>>(value: Signal<T>) -> Element {
     let html = use_signal(|| create_form(value));
